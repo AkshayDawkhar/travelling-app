@@ -13,7 +13,7 @@ class HomeScr extends StatefulWidget {
 
 class _HomeScrState extends State<HomeScr> {
   late PageController pageController;
-
+  bool bo = true;
   int a = 0;
   @override
   void initState() {
@@ -64,8 +64,8 @@ class _HomeScrState extends State<HomeScr> {
           ],
           onTap: (a) {
             this.a = a;
+            bo = !bo;
             setState(() {});
-            Navigator.pushNamed(context, RoutMap.second);
           },
         ),
         body: SafeArea(
@@ -97,13 +97,28 @@ class _HomeScrState extends State<HomeScr> {
                         );
                       })),
                 ),
-                SizedBox(
-                  height: 250,
-                  child: Container(
-                    decoration: BoxDecoration(
-                        image: DecorationImage(
-                            image: NetworkImage(
-                                "https://images.unsplash.com/photo-1568822241089-05fe03f22b25?ixlib=rb-1.2.1&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=870&q=80"))),
+                GestureDetector(
+                  onTap: (() {
+                    bo = !bo;
+
+                    setState(() {});
+                  }),
+                  child: SizedBox(
+                    height: 250,
+                    child: AnimatedContainer(
+                      child: AnimatedContainer(
+                        duration: Duration(seconds: 3),
+                        curve: SawTooth(3),
+                        decoration: BoxDecoration(
+                            image: DecorationImage(
+                                opacity: bo ? 1 : 0,
+                                image: AssetImage(DataIn.li[3]['si']))),
+                      ),
+                      duration: Duration(seconds: 2),
+                      decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: AssetImage(DataIn.li[2]['si']))),
+                    ),
                   ),
                 ),
                 Padding(
