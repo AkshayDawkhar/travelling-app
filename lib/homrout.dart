@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:glass/rout.dart';
 
@@ -13,12 +15,32 @@ class HomeScr extends StatefulWidget {
 
 class _HomeScrState extends State<HomeScr> {
   late PageController pageController;
+  Timer? coutimer;
   bool bo = true;
+  int bi = 0;
   int a = 0;
+  Timer getTimer() {
+    return Timer.periodic(const Duration(seconds: 3), (timer) {
+      if (bi == DataIn.pg.length) {
+        bi = 0;
+      }
+
+      pageController.animateToPage(bi,
+          duration: const Duration(seconds: 1), curve: Curves.easeInQuint);
+      bi++;
+    });
+  }
+
   @override
   void initState() {
     pageController = PageController(initialPage: 0, viewportFraction: 0.9);
     super.initState();
+    setState(() {
+      Future.delayed(const Duration(seconds: 0), (() {
+        bo = !bo;
+      }));
+    });
+    coutimer = getTimer();
   }
 
   @override
@@ -27,6 +49,7 @@ class _HomeScrState extends State<HomeScr> {
     super.dispose();
   }
 
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         // backgroundColor: Colors.white,
@@ -34,7 +57,7 @@ class _HomeScrState extends State<HomeScr> {
         appBar: AppBar(
           backgroundColor: const Color.fromARGB(255, 44, 62, 71),
           leading: const Icon(Icons.recommend_outlined),
-          title: const Text("data"),
+          title: const Text("JAPAN"),
           actions: <Widget>[
             Container(
               decoration: BoxDecoration(
@@ -64,64 +87,110 @@ class _HomeScrState extends State<HomeScr> {
           ],
           onTap: (a) {
             this.a = a;
-            bo = !bo;
-            setState(() {});
+            bi = a;
+            pageController.animateToPage(bi,
+                duration: const Duration(seconds: 2),
+                curve: Curves.easeInQuint);
           },
         ),
         body: SafeArea(
           child: SingleChildScrollView(
             child: Column(
               children: [
-                SizedBox(
-                  height: 230,
-                  child: PageView.builder(
-                      controller: pageController,
-                      itemCount: DataIn.li.length,
-                      itemBuilder: ((context, index) {
-                        return Column(
-                          children: [
-                            SizedBox(
-                              height: 230,
-                              child: Container(
-                                margin: const EdgeInsets.all(5),
-                                // padding: EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(22),
-                                    image: DecorationImage(
-                                        image:
-                                            AssetImage(DataIn.li[index]['si']),
-                                        fit: BoxFit.cover)),
-                              ),
-                            ),
-                          ],
-                        );
-                      })),
-                ),
                 GestureDetector(
-                  onTap: (() {
-                    bo = !bo;
-
-                    setState(() {});
-                  }),
+                  onPanDown: (details) {
+                    coutimer?.cancel();
+                    coutimer = null;
+                  },
+                  onPanCancel: () {
+                    coutimer = getTimer();
+                  },
                   child: SizedBox(
-                    height: 250,
-                    child: AnimatedContainer(
-                      child: AnimatedContainer(
-                        duration: Duration(seconds: 3),
-                        curve: SawTooth(3),
-                        decoration: BoxDecoration(
-                            image: DecorationImage(
-                                opacity: bo ? 1 : 0,
-                                image: AssetImage(DataIn.li[3]['si']))),
-                      ),
-                      duration: Duration(seconds: 2),
-                      decoration: BoxDecoration(
-                          image: DecorationImage(
-                              image: AssetImage(DataIn.li[2]['si']))),
-                    ),
+                    height: 230,
+                    child: PageView.builder(
+                        allowImplicitScrolling: true,
+                        controller: pageController,
+                        onPageChanged: (index) {
+                          bi = index;
+                          setState(() {});
+                        },
+                        itemCount: DataIn.pg.length,
+                        itemBuilder: ((context, index) {
+                          return Column(
+                            children: [
+                              Container(
+                                decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(22)),
+                                height: 230,
+                                child: Container(
+                                  margin: const EdgeInsets.all(12),
+                                  // padding: EdgeInsets.all(12),
+
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(22),
+                                      image: DecorationImage(
+                                          image: NetworkImage(
+                                              DataIn.pg[index]['aurl']),
+                                          fit: BoxFit.cover)),
+                                ),
+                              ),
+                            ],
+                          );
+                        })),
                   ),
                 ),
-                Padding(
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: List.generate(
+                      DataIn.pg.length,
+                      (index) => GestureDetector(
+                            onTap: () {
+                              bi = index;
+                            },
+                            child: Container(
+                              margin: bi == index
+                                  ? const EdgeInsets.all(1)
+                                  : const EdgeInsets.all(3),
+                              child: Icon(
+                                     Icons.circle,
+                                size: bi == index ? 12 : 6,
+                                color:
+                                    index == bi ? Colors.blue : Colors.blueGrey,
+                              ),
+                            ),
+                          )),
+                ),
+                // GestureDetector(
+                //   onTap: (() {
+                //     bo = !bo;
+
+                //     setState(() {});
+                //   }),
+                //   child: SizedBox(
+                //     height: 250,
+                //     child: AnimatedContainer(
+                //       // ignore: sort_child_properties_last
+                //       child: AnimatedOpacity(
+                //           curve: updown(count: 9999),
+                //           opacity: bo ? 1 : 0,
+                //           duration: const Duration(seconds: 66653),
+                //           // curve: SawTooth(3),
+
+                //           child: Container(
+                //             decoration: BoxDecoration(
+                //                 image: DecorationImage(
+                //                     fit: BoxFit.cover,
+                //                     image: NetworkImage(DataIn.pg[1]['aurl']))),
+                //           )),
+                //       duration: const Duration(seconds: 2),
+                //       decoration: BoxDecoration(
+                //           image: DecorationImage(
+                //               image: AssetImage(DataIn.li[2]['si']))),
+                //     ),
+                //   ),
+                // ),
+
+                const Padding(
                   padding: EdgeInsets.all(8.0),
                   child: GridelBld(),
                 )
